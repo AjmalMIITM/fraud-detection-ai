@@ -1,126 +1,39 @@
 from flask import Flask, request, jsonify
-import pandas as pd
-import numpy as np
 import pickle
+import numpy as np
 import shap
-import logging
-
-# Set up logging
-logging.basicConfig(
-    level=logging.INFO,
-    filename='api.log',
-    format='%(asctime)s - %(levelname)s - %(message)s'
-)
-
-# Load the trained model
-try:
-    with open('rf_model.pkl', 'rb') as f:
-        rf_model = pickle.load(f)
-    logging.info("Model loaded successfully")
-except Exception as e:
-    logging.error(f"Failed to load model: {str(e)}")
-    raise
-
-# Print the number of classes for debugging (also log it)
-logging.info(f"Number of classes in the model: {rf_model.n_classes_}")
-
-# Initialize SHAP explainer
-try:
-    explainer = shap.TreeExplainer(rf_model)
-    logging.info("SHAP explainer initialized successfully")
-except Exception as e:
-    logging.error(f"Failed to initialize SHAP explainer: {str(e)}")
-    raise
-
-# Best threshold from Step 2
-best_threshold = 0.03
+from sklearn.ensemble import RandomForestClassifier
 
 app = Flask(__name__)
 
-def validate_features(features):
-    """Validate the input features."""
-    if not isinstance(features, list):
-        return False, "Features must be a list"
-    if len(features) != 29:
-        return False, f"Expected 29 features (V1-V28, Amount), got {len(features)}"
-    if not all(isinstance(x, (int, float)) for x in features):
-        return False, "All features must be numeric"
-    return True, None
+# Load the model and SHAP explainer
+with open('rf_model.pkl', 'rb') as f:
+    rf_model = pickle.load(f)
+explainer = shap.TreeExplainer(rf_model)
+
+@app.route('/')
+def home():
+    return "Welcome to the Fraud Detection AI API! Use the /predict endpoint to make predictions. Example: POST to /predict with {'features': [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.126280, -0.434824, -0.081230, -0.151045, 17982.10]}"
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    try:
-        # Get input data
-        data = request.json
-        if not data or 'features' not in data:
-            logging.warning("Invalid input: 'features' key missing")
-            return jsonify({'error': "Missing 'features' key in request body"}), 400
-
-        features = data['features']
-        is_valid, error_msg = validate_features(features)
-        if not is_valid:
-            logging.warning(f"Invalid input: {error_msg}")
-            return jsonify({'error': error_msg}), 400
-
-        logging.info(f"Received valid request with features: {features}")
-
-        # Convert to DataFrame
-        features_array = np.array([features])
-        df = pd.DataFrame(features_array, columns=[f'V{i}' for i in range(1, 29)] + ['Amount'])
-
-        # Make prediction
-        proba = rf_model.predict_proba(df)[:, 1]
-        pred = (proba >= best_threshold).astype(int)[0]
-
-        # Generate SHAP explanation
-        shap_values = explainer.shap_values(df)
-        
-        # Log the structure of shap_values
-        logging.info(f"Structure of shap_values: {type(shap_values)}")
-        if isinstance(shap_values, list):
-            logging.info(f"Length of shap_values list: {len(shap_values)}")
-            for i, val in enumerate(shap_values):
-                logging.info(f"shap_values[{i}] shape: {np.array(val).shape}")
-        else:
-            logging.info(f"shap_values shape: {shap_values.shape}")
-
-        # Handle SHAP values based on their structure
-        if isinstance(shap_values, list) and len(shap_values) == 2:
-            shap_vals = shap_values[1][0]  # SHAP values for Class=1 (fraud), first sample
-        elif isinstance(shap_values, list) and len(shap_values) == 1:
-            shap_vals = shap_values[0][0]  # First sample
-        else:
-            shap_vals = shap_values[0, :, 1]  # Shape: (29,)
-
-        top_features_idx = np.argsort(np.abs(shap_vals))[-3:]  # Top 3 features
-        top_features = df.columns[top_features_idx].tolist()
-        top_values = df.iloc[0][top_features].values.tolist()
-        feature_contributions = shap_vals[top_features_idx].tolist()
-
-        # Dynamic explanation based on SHAP contributions
-        explanation_parts = []
-        for feature, value, contribution in zip(top_features, top_values, feature_contributions):
-            if contribution > 0:
-                explanation_parts.append(
-                    f"{feature} (value: {value:.2f}, SHAP: {contribution:.4f}) increased the likelihood of fraud"
-                )
-            else:
-                explanation_parts.append(
-                    f"{feature} (value: {value:.2f}, SHAP: {contribution:.4f}) decreased the likelihood of fraud"
-                )
-        explanation = "Prediction influenced by: " + "; ".join(explanation_parts) + "."
-
-        logging.info(f"Prediction: {pred}, Probability: {proba[0]}, Explanation: {explanation}")
-
-        return jsonify({
-            'fraud': int(pred),
-            'probability': float(proba[0]),
-            'explanation': explanation
-        })
-
-    except Exception as e:
-        logging.error(f"Prediction error: {str(e)}")
-        return jsonify({'error': f"Internal server error: {str(e)}"}), 500
+    data = request.get_json()
+    features = data.get('features')
+    if not features or len(features) != 29:
+        return jsonify({'error': 'Expected 29 features (V1-V28, Amount), got {}'.format(len(features) if features else 0)}), 400
+    features = np.array(features).reshape(1, -1)
+    prediction = rf_model.predict(features)[0]
+    probability = rf_model.predict_proba(features)[0][1]
+    shap_values = explainer.shap_values(features)
+    top_features = np.argsort(np.abs(shap_values[1][0]))[-3:]
+    explanation = "Prediction influenced by: "
+    for i in top_features:
+        explanation += f"V{i+1} (value: {features[0][i]:.2f}, SHAP: {shap_values[1][0][i]:.4f}) {'increased' if shap_values[1][0][i] > 0 else 'decreased'} the likelihood of fraud; "
+    return jsonify({
+        'fraud': int(prediction),
+        'probability': float(probability),
+        'explanation': explanation.strip('; ')
+    })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(debug=True)
