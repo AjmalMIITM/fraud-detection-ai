@@ -40,14 +40,20 @@ def predict():
     # Debug: Print the shape of shap_values to understand its structure
     print("SHAP values structure:", [np.array(sv).shape for sv in shap_values])
     
-    # Handle SHAP values based on the number of classes
-    if len(shap_values) == 2:  # Binary classification: shap_values[0] for class 0, shap_values[1] for class 1
+    # Handle SHAP values based on their structure
+    if len(shap_values) == 2:  # Expected format: [array for class 0, array for class 1]
         shap_values_for_class = shap_values[1]  # Use SHAP values for class 1 (fraud)
-    else:  # If only one set of SHAP values (e.g., single-class output), use the first set
+    elif len(shap_values) == 1 and len(np.array(shap_values[0]).shape) == 2 and np.array(shap_values[0]).shape[1] == 2:
+        # Alternative format: single array of shape (n_features, n_classes)
+        shap_values_for_class = shap_values[0][:, 1]  # Use SHAP values for class 1 (fraud)
+    else:  # Fallback for unexpected formats
         shap_values_for_class = shap_values[0]
     
+    # Debug: Print all SHAP values for class 1
+    print("All SHAP values for class 1:", {feature_names[i]: shap_values_for_class[i] for i in range(len(feature_names))})
+    
     # Compute top features based on SHAP values (up to 3 features with non-zero SHAP values)
-    shap_abs = np.abs(shap_values_for_class[0])
+    shap_abs = np.abs(shap_values_for_class)
     top_indices = np.argsort(shap_abs)[::-1]  # Sort in descending order
     top_features = [i for i in top_indices if shap_abs[i] > 0][:3]  # Select up to 3 features with non-zero SHAP values
     
@@ -55,7 +61,7 @@ def predict():
     if len(top_features) > 0:
         explanation = "Prediction influenced by: "
         for i in top_features:
-            explanation += f"{feature_names[i]} (value: {features[0][i]:.2f}, SHAP: {shap_values_for_class[0][i]:.4f}) {'increased' if shap_values_for_class[0][i] > 0 else 'decreased'} the likelihood of fraud; "
+            explanation += f"{feature_names[i]} (value: {features[0][i]:.2f}, SHAP: {shap_values_for_class[i]:.4f}) {'increased' if shap_values_for_class[i] > 0 else 'decreased'} the likelihood of fraud; "
         explanation = explanation.strip('; ')
     else:
         explanation = "No significant features influenced the prediction (all SHAP values are zero)."
