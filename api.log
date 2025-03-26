@@ -1,0 +1,19 @@
+2025-03-26 13:09:46,669 - INFO - Model loaded successfully
+2025-03-26 13:09:46,669 - INFO - Number of classes in the model: 2
+2025-03-26 13:09:46,672 - INFO - SHAP explainer initialized successfully
+2025-03-26 13:09:46,689 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://192.168.1.2:5000
+2025-03-26 13:09:46,692 - INFO - [33mPress CTRL+C to quit[0m
+2025-03-26 13:12:56,114 - INFO - Received valid request with features: [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.12628, -0.434824, -0.08123, -0.151045, 17982.1]
+2025-03-26 13:12:56,129 - INFO - Structure of shap_values: <class 'numpy.ndarray'>
+2025-03-26 13:12:56,129 - INFO - shap_values shape: (1, 29, 2)
+2025-03-26 13:12:56,129 - INFO - Prediction: 1, Probability: 0.15, Explanation: Prediction influenced by: V3 (value: 2.50, SHAP: -0.1039) decreased the likelihood of fraud; V11 (value: -1.29, SHAP: -0.1113) decreased the likelihood of fraud; V17 (value: -0.67, SHAP: 0.1381) increased the likelihood of fraud.
+2025-03-26 13:12:56,129 - INFO - 127.0.0.1 - - [26/Mar/2025 13:12:56] "POST /predict HTTP/1.1" 200 -
+2025-03-26 13:13:48,381 - WARNING - Invalid input: 'features' key missing
+2025-03-26 13:13:48,381 - INFO - 127.0.0.1 - - [26/Mar/2025 13:13:48] "[31m[1mPOST /predict HTTP/1.1[0m" 400 -
+2025-03-26 13:13:56,833 - WARNING - Invalid input: Expected 29 features (V1-V28, Amount), got 3
+2025-03-26 13:13:56,833 - INFO - 127.0.0.1 - - [26/Mar/2025 13:13:56] "[31m[1mPOST /predict HTTP/1.1[0m" 400 -
+2025-03-26 13:14:07,948 - WARNING - Invalid input: All features must be numeric
+2025-03-26 13:14:07,948 - INFO - 127.0.0.1 - - [26/Mar/2025 13:14:07] "[31m[1mPOST /predict HTTP/1.1[0m" 400 -
