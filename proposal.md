@@ -12,7 +12,8 @@
  
 **Deliverables:** 
 - A trained Random Forest model (rf_model.pkl). 
-- A Flask API (app.py) for fraud detection, returning predictions, probabilities, and SHAP explanations. 
+- A Flask API (app.py) for fraud detection, returning predictions, probabilities, and SHAP explanations.
+- A Flask API (app.py) for fraud detection, deployed on Render at https://fraud-detection-ai.onrender.com, returning predictions, probabilities, and SHAP explanations. 
 - A Jupyter notebook (fraud_detection.ipynb) documenting the data preprocessing, model training, and evaluation process. 
 - A GitHub repository (https://github.com/AjmalMIITM/fraud-detection-ai) containing all code, the trained model, and documentation (README.md and proposal.md). 
  

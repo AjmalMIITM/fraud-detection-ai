@@ -23,9 +23,12 @@ This project implements an LLM-powered fraud detection system using a Random For
    ``` 
    python app.py 
    ``` 
-4. Test the API: 
+4. Test the API:
+
+You can test the API locally by running `app.py` and sending a POST request to `http://127.0.0.1:5000/predict`. Alternatively, test the deployed API:
+
    ``` 
-   curl -X POST -H "Content-Type: application/json" -d "{\"features\": [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.126280, -0.434824, -0.081230, -0.151045, 17982.10]}" http://localhost:5000/predict 
+  curl -X POST -H "Content-Type: application/json" -d "{"features": [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.126280, -0.434824, -0.081230, -0.151045, 17982.10]}" https://fraud-detection-ai.onrender.com/predict
    ``` 
  
 ## Dataset 
