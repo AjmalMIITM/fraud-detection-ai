@@ -38,30 +38,53 @@ def predict():
     features_df = pd.DataFrame([features], columns=feature_names)
     
     # Use probability with explicit threshold for prediction
-    probability = rf_model.predict_proba(features_df)[0][1]
-    threshold = 0.5  # Default threshold for binary classification; can be adjusted based on business needs
+    try:
+        probability = rf_model.predict_proba(features_df)[0][1]
+    except Exception as e:
+        return jsonify({'error': f'Error computing prediction probability: {str(e)}'}), 500
+    
+    threshold = 0.5
     prediction = 1 if probability >= threshold else 0
     
     # Compute SHAP values for explainability
-    shap_values = explainer.shap_values(features_df)
-    if len(shap_values) == 2:
-        shap_values_for_class = shap_values[1]
-    elif len(shap_values) == 1 and len(np.array(shap_values[0]).shape) == 2 and np.array(shap_values[0]).shape[1] == 2:
-        shap_values_for_class = shap_values[0][:, 1]
-    else:
-        shap_values_for_class = shap_values[0]
+    try:
+        shap_values = explainer.shap_values(features_df)
+        # Debug: Log the shape of shap_values
+        print(f"shap_values type: {type(shap_values)}, len: {len(shap_values) if isinstance(shap_values, list) else 'N/A'}")
+        if isinstance(shap_values, list):
+            print(f"shap_values[0] shape: {np.array(shap_values[0]).shape}")
+            if len(shap_values) == 2:
+                shap_values_for_class = shap_values[1]  # SHAP values for class 1 (fraud)
+            elif len(shap_values) == 1 and len(np.array(shap_values[0]).shape) == 2 and np.array(shap_values[0]).shape[1] == 2:
+                shap_values_for_class = shap_values[0][:, 1]
+            else:
+                shap_values_for_class = shap_values[0]
+        else:
+            # If shap_values is not a list, assume it's a numpy array
+            shap_values_for_class = shap_values
+        # Ensure shap_values_for_class is 2D
+        shap_values_for_class = np.array(shap_values_for_class)
+        if len(shap_values_for_class.shape) == 1:
+            shap_values_for_class = shap_values_for_class.reshape(1, -1)
+        print(f"shap_values_for_class shape: {shap_values_for_class.shape}")
+    except Exception as e:
+        return jsonify({'error': f'Error computing SHAP values: {str(e)}'}), 500
 
     # Generate explanation based on top 3 features
-    shap_abs = np.abs(shap_values_for_class)
-    top_indices = np.argsort(shap_abs)[0][::-1]
-    top_features = [i for i in top_indices if shap_abs[0][i] > 0][:3]
-    if len(top_features) > 0:
-        explanation = "Prediction influenced by: "
-        for i in top_features:
-            explanation += f"{feature_names[i]} (value: {features[i]:.2f}, SHAP: {shap_values_for_class[0][i]:.4f}) {'increased' if shap_values_for_class[0][i] > 0 else 'decreased'} the likelihood of fraud; "
-        explanation = explanation.strip('; ')
-    else:
-        explanation = "No significant features influenced the prediction (all SHAP values are zero)."
+    try:
+        shap_abs = np.abs(shap_values_for_class)
+        print(f"shap_abs shape: {shap_abs.shape}")
+        top_indices = np.argsort(shap_abs[0])[::-1]  # Sort indices in descending order
+        top_features = [i for i in top_indices if shap_abs[0][i] > 0][:3]
+        if len(top_features) > 0:
+            explanation = "Prediction influenced by: "
+            for i in top_features:
+                explanation += f"{feature_names[i]} (value: {features[i]:.2f}, SHAP: {shap_values_for_class[0][i]:.4f}) {'increased' if shap_values_for_class[0][i] > 0 else 'decreased'} the likelihood of fraud; "
+            explanation = explanation.strip('; ')
+        else:
+            explanation = "No significant features influenced the prediction (all SHAP values are zero)."
+    except Exception as e:
+        return jsonify({'error': f'Error generating SHAP explanation: {str(e)}'}), 500
 
     # Return response
     return jsonify({
@@ -69,6 +92,5 @@ def predict():
         'probability': float(probability),
         'explanation': explanation
     })
-
 if __name__ == '__main__':
     app.run(debug=True)
