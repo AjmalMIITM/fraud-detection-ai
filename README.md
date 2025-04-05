@@ -1,145 +1,159 @@
-# 🛡️ Advanced Fraud Detection System
+# 🛡️ Advanced Fraud Detection System (Explainable AI)
 
-[![Python 3.10](https://img.shields.io/badge/Pytww.python.org/downloads/r://img.shields.io/badge/scikit--learn-1.2.2-orange.svg//img.shields.io/badge/Flaflask.palletsprojects.commg.shields.io/badge/SHAP-0.46.0-red.svgent](https://img.shields.io/badge/Deployed-Render-9cf.svect presents a fraud detection system using a Random Forest classifier with explainable AI features, trained on the Credit Card Fraud Detection Dataset 2023 from Kaggle. The system achieves **99% recall for fraud detection** with a high precision rate, providing both accurate predictions and transparent decision insights through SHAP value analysis.
+> **99% Recall • SHAP Explanations • Render Deployed API**
 
-## 📊 Key Performance Metrics
+[![Python 3.10](https://img.shields.io/badge/Python-3.10-blue.svg)](https://www.python.org/)
+[![scikit-learn](https://img.shields.io/badge/scikit--learn-1.2.2-orange.svg)](https://scikit-learn.org/)
+[![Flask](https://img.shields.io/badge/Flask-2.2.5-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![SHAP](https://img.shields.io/badge/SHAP-0.46.0-red.svg)](https://github.com/slundberg/shap)
+[![Deployed on Render](https://img.shields.io/badge/Deployed-Render-9cf.svg)](https://fraud-detection-ai.onrender.com/)
 
-| Metric | Score | Description |
-|--------|-------|-------------|
-| Recall (Fraud Class) | 0.99 | Detects 99% of fraudulent transactions |
-| Precision (Fraud Class) | 0.67 | High precision despite class imbalance |
-| ROC-AUC | ~0.99 | Excellent discrimination ability |
-| False Negatives | 4 out of 574 | Only 4 fraudulent transactions missed |
+A production-ready, end-to-end **Fraud Detection System** trained on real-world transaction data and enriched with **Explainable AI** using SHAP. Built to detect fraudulent transactions with **high recall and interpretability**, making it suitable for financial institutions and risk analytics.
 
-## ✨ Key Features
+---
 
-- **Robust ML Pipeline**: Random Forest classifier optimized for imbalanced credit card fraud data
-- **Explainable AI**: SHAP (SHapley Additive exPlanations) for transparent model predictions
-- **Production-Ready API**: Flask-based REST API with comprehensive error handling
-- **Live Deployment**: Hosted on Render with real-time prediction capabilities
-- **Imbalance Handling**: Specialized techniques to address the 99:1 class imbalance
+## 🚀 Results at a Glance
+
+| Metric                    | Score | Description                                  |
+|---------------------------|-------|----------------------------------------------|
+| **Recall (Fraud Class)**  | 0.99  | Captures 99% of all fraudulent transactions  |
+| **Precision (Fraud Class)** | 0.67  | Optimized precision despite imbalance         |
+| **ROC-AUC**               | ~0.99 | Outstanding model discrimination              |
+| **False Negatives**       | 4/574 | Extremely low missed fraud cases              |
+
+---
+
+## 💡 Features
+
+✅ **Optimized Random Forest Classifier**  
+✅ **SHAP for Transparent Explanations**  
+✅ **Flask API for Real-Time Predictions**  
+✅ **Deployed on Render (Free Tier)**  
+✅ **Threshold Tuning for Class Imbalance**  
+✅ **High Accuracy with Model Interpretability**  
+
+---
 
 ## 🧠 System Architecture
 
 ```
+User Input → ML Model → Prediction → SHAP Explainer → JSON Response
+```
+
+```
 ┌─────────────┐    ┌──────────────┐    ┌───────────────┐
-│ Transaction │    │ ML Prediction │    │ SHAP Analysis │
-│   Request   │───▶│     Model     │───▶│ & Explanation │
+│ Transaction │ → │ Fraud Model  │ → │ SHAP Explainer │
 └─────────────┘    └──────────────┘    └───────────────┘
-                          │                     │
-                          ▼                     ▼
-                   ┌──────────────────────────────┐
-                   │      JSON Response with      │
-                   │   Prediction & Explanation   │
-                   └──────────────────────────────┘
+                             ↓
+                JSON Output: Prediction + Why?
 ```
 
-## 🚀 API Usage
+---
 
-### Local Testing
+## 🌐 Live Demo (API)
 
-```bash
-# Start the server
-python app.py
-
-# Make a prediction request
-curl -X POST -H "Content-Type: application/json" \
--d '{"features": [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.126280, -0.434824, -0.081230, -0.151045, 17982.10]}' \
-http://127.0.0.1:5000/predict
-```
-
-### Production API
+### ✅ Example Usage:
 
 ```bash
 curl -X POST -H "Content-Type: application/json" \
--d '{"features": [-0.260648, -0.469648, 2.496266, -0.083724, 0.129681, 0.732898, 0.519014, -0.130006, 0.727159, 0.637735, -1.289146, 0.507876, 0.019821, 1.443803, 0.151603, -0.339666, -0.673666, -0.117375, 0.450852, -0.114963, -0.110552, 0.217606, -0.134794, 0.165959, 0.126280, -0.434824, -0.081230, -0.151045, 17982.10]}' \
+-d '{"features": [-0.260648, -0.469648, 2.496266, ..., 17982.10]}' \
 https://fraud-detection-ai.onrender.com/predict
 ```
 
-### Sample Response
+### ✅ Sample Response:
 
 ```json
 {
   "fraud": 1,
   "probability": 0.87,
-  "explanation": "Prediction influenced by: V3 (value: 2.50, SHAP: 0.2345) increased the likelihood of fraud; V11 (value: -1.29, SHAP: 0.1876) increased the likelihood of fraud"
+  "explanation": "Prediction influenced by: V3 (value: 2.50, SHAP: 0.2345), V11 (value: -1.29, SHAP: 0.1876)"
 }
 ```
 
-## 📋 Technical Implementation Details
+---
 
-### Model Selection Rationale
+## 📊 Model Strategy
 
-The Random Forest classifier was chosen for this project due to its:
+### 📌 Why Random Forest?
 
-- **Robustness to outliers** common in financial transaction data
-- **Ability to handle non-linear relationships** between features
-- **Natural handling of class imbalance** with class_weight parameter
-- **Interpretability** when combined with SHAP explanations
-- **Superior performance** in comparative testing against logistic regression
+- Handles **outliers** and **non-linear features** well  
+- Naturally supports **imbalanced classification** via class weights  
+- Works great with SHAP’s `TreeExplainer`  
+- Outperformed other models in benchmark tests  
 
-### Handling Extreme Class Imbalance
+### 🧪 Imbalance Handling
 
-The dataset exhibits a 99:1 class imbalance (non-fraud:fraud), which was addressed through:
+- **Class Weight Balancing**  
+- **Threshold Shift to 0.03** for higher fraud sensitivity  
+- **PR-AUC as Main Metric** instead of Accuracy  
 
-- **Class weighting** during model training
-- **Threshold optimization** (0.03) to improve recall for the minority class
-- **PR-AUC** as the primary evaluation metric instead of accuracy
+---
 
-### SHAP Implementation
+## 🧰 SHAP for Explainable AI
 
-The system implements SHAP (SHapley Additive exPlanations) to interpret model predictions:
+- **TreeExplainer** used for efficient SHAP computation  
+- Each prediction comes with **human-readable insights**  
+- Transparent feature contribution for every decision  
 
-- **TreeExplainer** for efficient computation of SHAP values from Random Forest
-- **Feature contribution analysis** highlighting which transaction characteristics led to the fraud prediction
-- **Multiple output format handling** to ensure robust explanation generation
+---
 
-## 🔧 Setup & Installation
+## 🔧 Setup & Run Locally
 
 ```bash
-# Clone the repository
 git clone https://github.com/AjmalMIITM/fraud-detection-ai.git
 cd fraud-detection-ai
 
 # Install dependencies
 pip install -r requirements.txt
 
-# Run the Flask application
+# Run locally
 python app.py
 ```
 
-## 🗂️ Project Structure
+Then open: `http://localhost:5000`
+
+---
+
+## 📁 Project Structure
 
 ```
-├── app.py                 # Flask API for model serving
-├── fraud_detection.ipynb  # Model training & evaluation notebook
-├── rf_model.pkl           # Trained Random Forest model
-├── requirements.txt       # Project dependencies
-├── proposal.md            # Project proposal with details
-└── README.md              # Project documentation
+📂 fraud-detection-ai
+├── app.py                 → Flask API endpoint
+├── fraud_detection.ipynb  → Model training & SHAP analysis
+├── rf_model.pkl           → Trained model
+├── requirements.txt       → Dependency list
+├── proposal.md            → System planning document
+└── README.md              → You’re here!
 ```
 
-## 📊 Dataset
+---
 
-The Credit Card Fraud Detection Dataset 2023 from Kaggle features:
-- 568,630 transactions with anonymized numerical features V1-V28
-- Equal distribution of fraud and non-fraud in the original dataset, rebalanced to reflect real-world imbalance
-- PCA-transformed features for data privacy
+## 📂 Dataset Info
 
-## 🔮 Future Enhancements
+- Source: **Kaggle (2023)** Credit Card Fraud Dataset  
+- PCA-transformed, anonymized features (V1-V28)  
+- Real-world class imbalance simulated (99:1)  
+- Total Transactions: ~569,000+
 
-- **Model Visualization Pipeline**: Add interactive SHAP visualizations for feature importance
-- **Enhanced API Security**: Implement token-based authentication and rate limiting
-- **Model Monitoring System**: Add drift detection and retraining triggers
-- **Gradio Dashboard**: Create a user-friendly interface for non-technical stakeholders
-- **Documentation Expansion**: Add API specification and detailed model documentation
+---
 
-## 👨‍💻 Author
+## 🌱 Future Work
+
+🔒 Add API Authentication & Rate Limiting  
+📊 Interactive SHAP Dashboard via Gradio  
+📉 Model Drift Detection & Auto-Retraining  
+📚 Expanded Documentation with Swagger  
+
+---
+
+## 👨‍💻 About Me
 
 **Ajmal M**  
-IIT Madras  
-[Email](mailto:ajmal@iitm.ac.in) | [GitHub](https://github.com/AjmalMIITM)
+IIT Madras | Passionate about AI x Ethics x Impact_  
+📧 [Email](mailto:ajmal@iitm.ac.in) | 🌐 [GitHub](https://github.com/AjmalMIITM)
+
+---
 
 ## 📜 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See the `LICENSE` file for more.
